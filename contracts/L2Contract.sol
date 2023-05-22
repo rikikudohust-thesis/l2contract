@@ -180,6 +180,31 @@ contract L2Contract is Helpers {
         tokenList.push(address(0));
     }
 
+    // GOVERNANCE
+    function addToken(address tokenAddress) public {
+        require(
+            IERC20(tokenAddress).totalSupply() > 0,
+            "L2Contract::addToken: TOTAL_SUPPLY_ZERO"
+        );
+        uint256 currentTokens = tokenList.length;
+        require(
+            currentTokens < _LIMIT_TOKENS,
+            "L2Contract::addToken: TOKEN_LIST_FULL"
+        );
+        require(
+            tokenAddress != address(0),
+            "L2Contract::addToken: ADDRESS_0_INVALID"
+        );
+        require(tokenMap[tokenAddress] == 0, "L2Contract::addToken: ALREADY_ADDED");
+
+        tokenList.push(tokenAddress);
+        tokenMap[tokenAddress] = currentTokens;
+
+        emit AddToken(tokenAddress, uint32(currentTokens));
+    }
+
+    // CORIDINATOR
+
     function forgeBatch(
         uint48 newLastIdx,
         uint256 newStRoot,

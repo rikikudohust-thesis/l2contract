@@ -3,6 +3,11 @@ const { poseidonContract } = require('circomlibjs')
 
 
 const main = async () => {
+    // Deploy erc20
+    const totalsupply = ethers.utils.parseUnits("1000000", 18);
+    const ERC20Mock = await ethers.getContractFactory("MockToken");
+    const erc20Mock = await ERC20Mock.deploy("Mock", "MCK", totalsupply);
+    await erc20Mock.deployed();
 
     // Setup parameter 
     const _forgeL1L2BatchTimeout = 10
@@ -59,16 +64,17 @@ const main = async () => {
 
     return {
         l2Contract,
+        erc20Mock,
         accounts
     }
 }
 
-main().then(() => {
-    console.log("Deploy success")
-}).catch((err) => {
-    console.log(err)
-})
+require.main === module &&
+	main()
+		.then(() => process.exit())
+		.catch((error) => {
+			console.error(error);
+			process.exit(1);
+		});
 
-module.exports = {
-    main
-}
+module.exports = main;
