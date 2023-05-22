@@ -36,12 +36,12 @@ module.exports = {
         },
       },
       {
-        version: '0.8.0', settings: {
+        version: '0.8.19', settings: {
           optimizer: {
             enabled: true,
             runs: 999999,
-          },
-        },
+          }
+        }
       }
     ]
   },
