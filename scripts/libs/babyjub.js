@@ -21,7 +21,7 @@ class Wallet {
         this.bjjCompress = eddsa.babyJub.packPoint(publicKey)
         const compressedPublicKey = ethers.utils.hexValue(this.bjjCompress)
         this.publicKeyCompressed = compressedPublicKey.toString()
-        this.publicKeyCompressedHex = ethers.utils.hexZeroPad(`0x${compressedPublicKey.toString(16)}`, 32).slice(2)
+        // this.publicKeyCompressedHex = ethers.utils.hexZeroPad(`0x${compressedPublicKey.toString(16)}`, 32).slice(2)
 
         this.etherAddress = etherAddress
     }
@@ -46,33 +46,33 @@ class Wallet {
      * @param {Object} signerData - Signer data used to build a Signer to create the walet
      * @returns {String} The generated signature
      */
-    async signCreateAccountAuthorization(providerUrl, signerData) {
-        const provider = getProvider(providerUrl)
-        const signer = getSigner(provider, signerData)
-        const chainId = (await provider.getNetwork()).chainId
-        const bJJ = this.bjjCompress
+    // async signCreateAccountAuthorization(providerUrl, signerData) {
+    //     const provider = getProvider(providerUrl)
+    //     const signer = getSigner(provider, signerData)
+    //     const chainId = (await provider.getNetwork()).chainId
+    //     const bJJ = this.bjjCompress
 
-        const domain = {
-            name: EIP_712_PROVIDER,
-            version: EIP_712_VERSION,
-            chainId,
-            verifyingContract: CONTRACT_ADDRESSES[ContractNames.Hermez]
-        }
-        const types = {
-            Authorise: [
-                { name: 'Provider', type: 'string' },
-                { name: 'Authorisation', type: 'string' },
-                { name: 'BJJKey', type: 'bytes32' }
-            ]
-        }
-        const value = {
-            Provider: EIP_712_PROVIDER,
-            Authorisation: CREATE_ACCOUNT_AUTH_MESSAGE,
-            BJJKey: bJJ.reverse()
-        }
+    //     const domain = {
+    //         name: EIP_712_PROVIDER,
+    //         version: EIP_712_VERSION,
+    //         chainId,
+    //         verifyingContract: CONTRACT_ADDRESSES[ContractNames.Hermez]
+    //     }
+    //     const types = {
+    //         Authorise: [
+    //             { name: 'Provider', type: 'string' },
+    //             { name: 'Authorisation', type: 'string' },
+    //             { name: 'BJJKey', type: 'bytes32' }
+    //         ]
+    //     }
+    //     const value = {
+    //         Provider: EIP_712_PROVIDER,
+    //         Authorisation: CREATE_ACCOUNT_AUTH_MESSAGE,
+    //         BJJKey: bJJ.reverse()
+    //     }
 
-        return signer._signTypedData(domain, types, value)
-    }
+    //     return signer._signTypedData(domain, types, value)
+    // }
 }
 
 /**
@@ -102,9 +102,13 @@ class Wallet {
  * @param {Buffer} privateKey - 32 bytes buffer
  * @returns {Object} Contains the `hermezWallet` as a HermezWallet instance and the `hermezEthereumAddress`
  */
-// async function createWalletFromBjjPvtKey(privateKey) {
-//     const privateBjjKey = privateKey || Buffer.from(getRandomBytes(32))
-//     const hermezWallet = new HermezWallet(privateBjjKey, INTERNAL_ACCOUNT_ETH_ADDR)
+async function createWalletFromBjjPvtKey(privateKey, ethereumAddress) {
+    const eddsa = await buildEddsa()
+    const privateBjjKey = privateKey || Buffer.from(getRandomBytes(32))
+    const wallet = new Wallet(privateBjjKey, ethereumAddress, eddsa)
 
-//     return { hermezWallet, hermezEthereumAddress: INTERNAL_ACCOUNT_ETH_ADDR }
-// }
+    return wallet
+}
+
+module.exports = {createWalletFromBjjPvtKey}
+
