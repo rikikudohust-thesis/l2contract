@@ -15,32 +15,36 @@ module.exports = {
         version: '0.5.16', settings: {
           optimizer: {
             enabled: true,
-            runs: 999999,
+            runs: 200,
           },
+          viaIR: true,
         },
       },
       {
         version: '0.6.12', settings: {
           optimizer: {
             enabled: true,
-            runs: 999999,
+            runs: 200,
           },
+          viaIR: true,
         },
       },
       {
         version: '0.7.6', settings: {
           optimizer: {
             enabled: true,
-            runs: 999999,
+            runs: 200,
           },
+          viaIR: true,
         },
       },
       {
         version: '0.8.19', settings: {
           optimizer: {
             enabled: true,
-            runs: 999999,
-          }
+            runs: 200,
+          },
+          viaIR: true,
         }
       }
     ]

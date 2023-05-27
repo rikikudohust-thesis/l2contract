@@ -1,6 +1,8 @@
 {
   "dependencies": {
+    "@hermeznetwork/commonjs": "^0.3.3",
     "@openzeppelin/contracts": "^4.8.3",
+    "@openzeppelin/contracts-upgradeable": "^4.9.0",
     "circomlibjs": "^0.1.7",
     "dotenv": "^16.0.3",
     "ffjavascript": "^0.2.59",

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0
 
-pragma solidity 0.8.19;
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+
+pragma solidity ^0.8.0;
 
 /**
  * @dev Interface poseidon hash function 2 elements
@@ -26,7 +28,7 @@ contract PoseidonUnit4 {
 /**
  * @dev Rollup helper functions
  */
-contract Helpers {
+contract Helpers is Initializable{
     PoseidonUnit2 _insPoseidonUnit2;
     PoseidonUnit3 _insPoseidonUnit3;
     PoseidonUnit4 _insPoseidonUnit4;
@@ -38,7 +40,7 @@ contract Helpers {
     bytes32 public constant EIP712DOMAIN_HASH =
         0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f;
     // bytes32 public constant NAME_HASH =
-    //      keccak256("Hermez Network")
+    //      keccak256("ZkPayment Network")
     bytes32 public constant NAME_HASH =
         0xbe287413178bfeddef8d9753ad4be825ae998706a6dabff23978b59dccaea0ad;
     // bytes32 public constant VERSION_HASH =
@@ -49,8 +51,8 @@ contract Helpers {
     //      keccak256("Authorise(string Provider,string Authorisation,bytes32 BJJKey)");
     bytes32 public constant AUTHORISE_TYPEHASH =
         0xafd642c6a37a2e6887dc4ad5142f84197828a904e53d3204ecb1100329231eaa;
-    // bytes32 public constant HERMEZ_NETWORK_HASH = keccak256(bytes("Hermez Network")),
-    bytes32 public constant HERMEZ_NETWORK_HASH =
+    // bytes32 public constant ZKPAYMENT_NETWORK_HASH = keccak256(bytes("ZkPayment Network")),
+    bytes32 public constant ZKPAYMENT_NETWORK_HASH =
         0xbe287413178bfeddef8d9753ad4be825ae998706a6dabff23978b59dccaea0ad;
     // bytes32 public constant ACCOUNT_CREATION_HASH = keccak256(bytes("Account creation")),
     bytes32 public constant ACCOUNT_CREATION_HASH =
@@ -62,11 +64,11 @@ contract Helpers {
      * @param _poseidon3Elements Poseidon contract address for 3 elements
      * @param _poseidon4Elements Poseidon contract address for 4 elements
      */
-    constructor(
+    function _initializeHelpers(
         address _poseidon2Elements,
         address _poseidon3Elements,
         address _poseidon4Elements
-    ) public  {
+    ) internal initializer {
         _insPoseidonUnit2 = PoseidonUnit2(_poseidon2Elements);
         _insPoseidonUnit3 = PoseidonUnit3(_poseidon3Elements);
         _insPoseidonUnit4 = PoseidonUnit4(_poseidon4Elements);
@@ -244,7 +246,7 @@ contract Helpers {
     /**
      * @return chainId The current chainId where the smarctoncract is executed
      */
-    function getChainId() public view returns (uint256) {
+    function getChainId() public view returns (uint256 chainId) {
         return block.chainid;
     }
 
@@ -275,14 +277,14 @@ contract Helpers {
         require(
             uint256(s) <=
                 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0,
-            "HermezHelpers::_checkSig: INVALID_S_VALUE"
+            "ZkPaymentHelpers::_checkSig: INVALID_S_VALUE"
         );
 
         bytes32 encodeData =
             keccak256(
                 abi.encode(
                     AUTHORISE_TYPEHASH,
-                    HERMEZ_NETWORK_HASH,
+                    ZKPAYMENT_NETWORK_HASH,
                     ACCOUNT_CREATION_HASH,
                     babyjub
                 )
@@ -297,7 +299,7 @@ contract Helpers {
 
         require(
             ethAddress != address(0),
-            "HermezHelpers::_checkSig: INVALID_SIGNATURE"
+            "ZkPaymentHelpers::_checkSig: INVALID_SIGNATURE"
         );
 
         return ethAddress;
