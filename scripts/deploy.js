@@ -1,10 +1,18 @@
-const { ethers } = require('hardhat')
-const { poseidonContract } = require('circomlibjs')
+const { ethers, upgrades } = require('hardhat')
+// const { poseidonContract } = require('circomlibjs')
+const poseidonContract = require('circomlib/src/poseidon_gencontract');
+const { calculateInputMaxTxLevels } = require('./helpers/helpers');
 
 
 const main = async () => {
+    var accounts = await ethers.getSigners()
+
+    const maxTxVerifier = [344];
+    const nLevelsVerifier = [32];
+    var deployer = accounts[0];
+    var verifierParam = await calculateInputMaxTxLevels(maxTxVerifier, nLevelsVerifier)
     // Deploy erc20
-    const totalsupply = ethers.utils.parseUnits("1000000", 18);
+    const totalsupply = ethers.utils.parseUnits("1000000000", 18);
     const ERC20Mock = await ethers.getContractFactory("MockToken");
     const erc20Mock = await ERC20Mock.deploy("Mock", "MCK", totalsupply);
     await erc20Mock.deployed();
@@ -22,7 +30,6 @@ const main = async () => {
     await withdrawVerifier.deployed()
 
     // Deploy poseidon 
-    const accounts = await ethers.getSigners();
     const P2 = new ethers.ContractFactory(
         poseidonContract.generateABI(2),
         poseidonContract.createCode(2),
@@ -50,31 +57,34 @@ const main = async () => {
 
 
     // Deploy L2 contract
-    const L2Contract = await ethers.getContractFactory("L2Contract")
-    const l2Contract = await L2Contract.deploy(
-        [verifierRollup.address],
-        withdrawVerifier.address,
+    const ZKPAYMENT = await ethers.getContractFactory("ZkPayment")
+    let zkPayment;
+    zkPayment = await upgrades.deployProxy(ZKPAYMENT, [[verifierRollup.address],
+    [verifierParam.toString()],
+    withdrawVerifier.address,
         _forgeL1L2BatchTimeout,
-        p2.address,
-        p3.address,
-        p4.address
-    )
-
-    await l2Contract.deployed()
+        10,
+    p2.address,
+    p3.address,
+    p4.address], 
+    );
+    await zkPayment.deployed();
+    console.log("zkPayment Address: ", zkPayment.address)
+    console.log("zkpayment initialized")
 
     return {
-        l2Contract,
+        zkPayment,
         erc20Mock,
         accounts
     }
 }
 
 require.main === module &&
-	main()
-		.then(() => process.exit())
-		.catch((error) => {
-			console.error(error);
-			process.exit(1);
-		});
+    main()
+        .then(() => process.exit())
+        .catch((error) => {
+            console.error(error);
+            process.exit(1);
+        });
 
 module.exports = main;

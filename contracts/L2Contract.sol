@@ -8,7 +8,7 @@ import "./interfaces/VerifierWithdrawInterface.sol";
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract zkPayment is Helpers {
+contract ZkPayment is Helpers {
     struct VerifierRollup {
         VerifierRollupInterface verifierInterface;
         uint256 maxTx; // maximum rollup transactions in a batch: L2-tx + L1-tx transactions
@@ -172,7 +172,7 @@ contract zkPayment is Helpers {
         uint64 withdrawalDelay
     );
 
-    modifier onlyGovernance {
+    modifier onlyGovernance() {
         require(msg.sender == zkPaymentGovernanceAddress);
         _;
     }
@@ -181,24 +181,19 @@ contract zkPayment is Helpers {
      * @dev Initializer function (equivalent to the constructor). Since we use
      * upgradeable smartcontracts the state vars have to be initialized here.
      */
-    function initializeZkPayment(
+    function initialize(
         address[] memory _verifiers,
         uint256[] memory _verifiersParams,
         address _withdrawVerifier,
-        address _tokenHEZ,
         uint8 _forgeL1L2BatchTimeout,
         uint256 _feeAddToken,
         address _poseidon2Elements,
         address _poseidon3Elements,
-        address _poseidon4Elements,
-        address _zkPaymentGovernanceAddress,
-        uint64 _withdrawalDelay,
-        address _withdrawDelayerContract
+        address _poseidon4Elements
     ) external initializer {
         // set state variables
         _initializeVerifiers(_verifiers, _verifiersParams);
         withdrawVerifier = VerifierWithdrawInterface(_withdrawVerifier);
-        tokenHEZ = _tokenHEZ;
         forgeL1L2BatchTimeout = _forgeL1L2BatchTimeout;
         feeAddToken = _feeAddToken;
 
@@ -216,6 +211,7 @@ contract zkPayment is Helpers {
             _poseidon3Elements,
             _poseidon4Elements
         );
+        zkPaymentGovernanceAddress = msg.sender;
         // emit InitializeZkPaymentEvent(
         //     _forgeL1L2BatchTimeout,
         //     _feeAddToken,
@@ -377,7 +373,11 @@ contract zkPayment is Helpers {
                 uint256 prevBalance = IERC20(tokenList[tokenID]).balanceOf(
                     address(this)
                 );
-                IERC20(tokenList[tokenID]).transferFrom(msg.sender, address(this), loadAmount);
+                IERC20(tokenList[tokenID]).transferFrom(
+                    msg.sender,
+                    address(this),
+                    loadAmount
+                );
                 uint256 postBalance = IERC20(tokenList[tokenID]).balanceOf(
                     address(this)
                 );
@@ -501,7 +501,6 @@ contract zkPayment is Helpers {
         // numExitRoot is not checked because an invalid numExitRoot will bring to a 0 root
         // and this is an empty tree.
         // in case of instant withdraw assure that is available
-
 
         // build 'key' and 'value' for exit tree
         uint256[4] memory arrayState = _buildTreeState(
@@ -656,10 +655,6 @@ contract zkPayment is Helpers {
             tokenMap[tokenAddress] == 0,
             "zkPayment::addToken: ALREADY_ADDED"
         );
-
-        if (msg.sender != zkPaymentGovernanceAddress) {
-            IERC20(tokenHEZ).transferFrom(msg.sender, zkPaymentGovernanceAddress, feeAddToken);
-        }
 
         tokenList.push(tokenAddress);
         tokenMap[tokenAddress] = currentTokens;
@@ -994,5 +989,4 @@ contract zkPayment is Helpers {
      * @param tokenID Token identifier
      * @param instantWithdraw true if is an instant withdraw
      */
-
 }
