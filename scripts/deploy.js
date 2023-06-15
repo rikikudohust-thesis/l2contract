@@ -7,8 +7,8 @@ const { calculateInputMaxTxLevels } = require('./helpers/helpers');
 const main = async () => {
     var accounts = await ethers.getSigners()
 
-    const maxTxVerifier = [344];
-    const nLevelsVerifier = [32];
+    const maxTxVerifier = [20];
+    const nLevelsVerifier = [10];
     var deployer = accounts[0];
     var verifierParam = await calculateInputMaxTxLevels(maxTxVerifier, nLevelsVerifier)
     // Deploy erc20
@@ -70,7 +70,17 @@ const main = async () => {
     );
     await zkPayment.deployed();
     console.log("zkPayment Address: ", zkPayment.address)
+    console.log(`poseidon 2: ${p2.address}`)
+    console.log(`poseidon 3: ${p3.address}`)
+    console.log(`poseidon 4: ${p4.address}`)
+    console.log(`rollup verifier: ${verifierRollup.address}`)
+    console.log(`withdraw verifier: ${verifierRollup.address}`)
     console.log("zkpayment initialized")
+    console.log("addL1Transaction Topic: ", zkPayment.interface.getEventTopic("L1UserTxEvent"))
+    console.log("ForgeBatch Topic: ", zkPayment.interface.getEventTopic("ForgeBatch"))
+    console.log("UpdateForgeL1L2BatchTimeout Topic: ", zkPayment.interface.getEventTopic("UpdateForgeL1L2BatchTimeout"))
+    console.log("UpdateFeeAddToken Topic: ", zkPayment.interface.getEventTopic("UpdateFeeAddToken"))
+    console.log("AddToken Topic: ", zkPayment.interface.getEventTopic("AddToken"))
 
     return {
         zkPayment,

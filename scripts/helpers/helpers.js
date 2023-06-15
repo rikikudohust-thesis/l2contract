@@ -39,7 +39,7 @@ class Forger {
     this.verifier = verifier;
 
     this.l1TxB = 544;
-  }
+    }
 
   async forgeBatch(l1Batch, l1TxUserArray, l1TxCoordinatorArray, l2TxArray, log) {
     const bb = await this.rollupDB.buildBatch(
@@ -54,7 +54,7 @@ class Forger {
       jsL1TxData = jsL1TxData + tx.slice(2);
     }
 
-    const currentQueue = await this.zkpayment.nextL1ToForgeQueue();
+    const currentQueue = await this.zkpayment.nextL1FillingQueue();
     const SCL1TxData = await this.zkpayment.mapL1TxQueue(currentQueue);
 
     expect(SCL1TxData).to.equal(`0x${jsL1TxData}`);
@@ -71,7 +71,11 @@ class Forger {
     }
 
     await bb.build();
-    console.log(bb.getInput())
+    // const data = await bb.getInput() 
+    // fs.writeFile('input.json', JSON.stringify(data), (err) => {
+    //   console.error(err)
+    // })
+    // console.log(await bb.getInput())
   }
 }
 

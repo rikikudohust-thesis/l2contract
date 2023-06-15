@@ -75,6 +75,20 @@ module.exports = {
       loggingEnabled: true,
       url: `https://data-seed-prebsc-1-s2.binance.org:8545`,
     },
+    eth_fork: {
+      tags: ['local', 'staging'],
+      live: true,
+      accounts,
+      loggingEnabled: true,
+      url: `https://rpc.tenderly.co/fork/3e258fc0-0c6e-442c-aabb-be3bc939d8d3`,
+    }, 
+    sepolia: {
+      tags: ['local', 'staging'],
+      live: true,
+      accounts,
+      loggingEnabled: true,
+      url: `https://sepolia.infura.io/v3/a37606efd3c5413dbae3f6736108e0ba`
+    }
   },
   mocha: {
     timeout: 200000

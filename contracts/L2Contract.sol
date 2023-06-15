@@ -60,10 +60,10 @@ contract ZkPayment is Helpers {
     // And the maximum User TX is _MAX_L1_USER_TX
 
     // Maximum L1-user transactions allowed to be queued in a batch
-    uint256 constant _MAX_L1_USER_TX = 128;
+    uint256 constant _MAX_L1_USER_TX = 5;
 
     // Maximum L1 transactions allowed to be queued in a batch
-    uint256 constant _MAX_L1_TX = 256;
+    uint256 constant _MAX_L1_TX = 10;
 
     // Modulus zkSNARK
     uint256 constant _RFIELD =
@@ -73,7 +73,7 @@ contract ZkPayment is Helpers {
     // [_MAX_L1_TX * _L1_USER_TOTALBYTES bytes] l1TxsData + totall1L2TxsDataLength + feeIdxCoordinatorLength + [2 bytes] chainID + [4 bytes] batchNum =
     // 18546 bytes + totall1L2TxsDataLength + feeIdxCoordinatorLength
 
-    uint256 constant _INPUT_SHA_CONSTANT_BYTES = 20082;
+    uint256 constant _INPUT_SHA_CONSTANT_BYTES = 894;
 
     uint8 public constant ABSOLUTE_MAX_L1L2BATCHTIMEOUT = 240;
 

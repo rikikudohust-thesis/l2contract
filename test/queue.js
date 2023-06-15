@@ -3,8 +3,8 @@ const { ethers, network } = require('hardhat');
 const setup = require('../scripts/deploy');
 const { createWalletFromBjjPvtKey } = require('../scripts/libs/babyjub')
 const { float40, RollupDB, SMTTmpDb } = require('@hermeznetwork/commonjs')
-const { buildSMT, newMemEmptyTrie } = require('circomlibjs')
 const { calculateInputMaxTxLevels, l1TxCreateAccountDeposit, Forger } = require('../scripts/helpers/helpers')
+const SMTMemDB = require('circomlib').SMTMemDB
 
 describe("L2 Contract", function () {
     const maxTx = 344;
@@ -15,8 +15,6 @@ describe("L2 Contract", function () {
     var erc20Mock;
     var w1;
     var w2;
-    var rollupDB;
-    var bb;
     beforeEach(async () => {
         var data = await setup();
         accounts = data.accounts;
@@ -28,15 +26,13 @@ describe("L2 Contract", function () {
         w2 = await createWalletFromBjjPvtKey(privateKey2, accounts[1].address)
         var tx = await zkPayment.connect(accounts[0]).addToken(erc20Mock.address);
         await tx.wait()
-        var chainID = network.config.chainId;
-        // var SMTMemDB = await newMemEmptyTrie();
-        // rollupDB = await RollupDB(SMTMemDB, chainID);
+
     });
     describe("L1 Transaction", async () => {
 
-        it("create account", async () => {
-            this.timeout(0)
-        });
+        // it("create account", async () => {
+        //     this.timeout(0)
+        // });
 
         it("create account deposit", async () => {
             this.timeout(0)
@@ -44,6 +40,17 @@ describe("L2 Contract", function () {
             const babyjub = w1.publicKeyCompressed;
             const loadAmount = float40.round(1000);
             const l1TxUserArray = []
+
+            var chainID = network.config.chainId;
+            var rollupDB = await RollupDB(new SMTMemDB(), chainID);
+            var forgerTest = new Forger(
+                maxTx,
+                maxL1Tx,
+                nLevels,
+                zkPayment,
+                rollupDB
+            )
+
 
             const initalLastForge = await zkPayment.nextL1FillingQueue();
             const initialCurrentForge = await zkPayment.nextL1ToForgeQueue();
@@ -59,33 +66,52 @@ describe("L2 Contract", function () {
                     )
                 )
             }
-
             expect(initalLastForge).to.equal(
                 await zkPayment.nextL1FillingQueue()
-            )
+            );
 
             expect(initialCurrentForge).to.equal(
                 await zkPayment.nextL1ToForgeQueue()
-            )
+            );
+            // l1TxUserArray.push(
+            //     await l1TxCreateAccountDeposit(
+            //         loadAmount,
+            //         tokenID,
+            //         babyjub,
+            //         accounts[0],
+            //         zkPayment,
+            //         erc20Mock
+            //     )
+            // );
+
+            // const after128L1LastForge = await zkPayment.nextL1FillingQueue();
+            // const after128CurrentForge = await zkPayment.nextL1ToForgeQueue();
+            // console.log(`after128L1LastForge: ${after128L1LastForge}`)
+            // console.log(`after128CurrentForge: ${after128CurrentForge}`)
+            // expect(parseInt(initalLastForge) + 1).to.equal(after128L1LastForge);
+            // expect(parseInt(initialCurrentForge)).to.equal(after128CurrentForge);
+
+            await forgerTest.forgeBatch(true, l1TxUserArray, []);
+
         });
-        it("create account deposit and transfer", async () => {
+        // it("create account deposit and transfer", async () => {
 
-            this.timeout(0)
-        });
+        //     this.timeout(0)
+        // });
 
-        it("deposit", async () => {
-            this.timeout(0)
+        // it("deposit", async () => {
+        //     this.timeout(0)
 
-        })
+        // })
 
-        it("exit", async () => {
-            this.timeout(0)
+        // it("exit", async () => {
+        //     this.timeout(0)
 
-        });
+        // });
 
-        it("transfer", async () => {
-            this.timeout(0)
+        // it("transfer", async () => {
+        //     this.timeout(0)
 
-        });
+        // });
     })
 })
