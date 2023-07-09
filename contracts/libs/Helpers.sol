@@ -67,59 +67,6 @@ contract Helpers is Initializable {
     _insPoseidonUnit4 = PoseidonUnit4(_poseidon4Elements);
   }
 
-  // Just for test
-  function hash2Elements(uint256[2] memory inputs) public view returns (uint256) {
-    return _hash2Elements(inputs);
-  }
-
-  function hash3Elements(uint256[3] memory inputs) public view returns (uint256) {
-    return _hash3Elements(inputs);
-  }
-
-  function hash4Elements(uint256[4] memory inputs) public view returns (uint256) {
-    return _hash4Elements(inputs);
-  }
-
-  function hashNode(uint256 left, uint256 right) public view returns (uint256) {
-    return _hashNode(left, right);
-  }
-
-  function hashFinalNode(uint256 key, uint256 value) public view returns (uint256) {
-    return _hashFinalNode(key, value);
-  }
-
-  // function calculateRoot(uint256[] memory siblings, uint256 key, uint256 value) public view returns (uint256) {
-  //   uint256 nextHash = _hashFinalNode(key, value);
-  //   uint256 siblingTmp;
-  //   for (uint256 i = uint256(siblings.length) - 1; i >= 0; i--) {
-  //     siblingTmp = siblings[uint256(i)];
-  //     bool leftRight = (uint8(key >> i) & 0x01) == 1;
-  //     nextHash = leftRight ? _hashNode(siblingTmp, nextHash) : _hashNode(nextHash, siblingTmp);
-  //   }
-  //   return nextHash;
-  // }
-
-  function buildTreeState(
-    uint32 token,
-    uint48 nonce,
-    uint256 balance,
-    uint256 ay,
-    address ethAddress
-  ) public pure returns (uint256[4] memory) {
-    uint256[4] memory stateArray;
-
-    stateArray[0] = token;
-    stateArray[0] |= nonce << 32;
-    stateArray[0] |= (ay >> 255) << (32 + 40);
-    // build element 2
-    stateArray[1] = balance;
-    // build element 4
-    stateArray[2] = (ay << 1) >> 1; // last bit set to 0
-    // build element 5
-    stateArray[3] = uint256(uint160(ethAddress));
-    return stateArray;
-  }
-
   /**
    * @dev Hash poseidon for 2 elements
    * @param inputs Poseidon input array of 2 elements
