@@ -1,5 +1,5 @@
 const { ethers } = require('hardhat')
-const { l1TxCreateAccountDeposit, l1UserTxDeposit } = require('./helpers/helpers')
+const { l1TxCreateAccountDeposit, l1UserTxDeposit, l1UserTxForceExit } = require('./helpers/helpers')
 const { createWalletFromBjjPvtKey } = require('../scripts/libs/babyjub')
 const { float40, RollupDB, SMTTmpDb } = require('@hermeznetwork/commonjs')
 
@@ -20,18 +20,17 @@ async function main() {
     const w1 = await createWalletFromBjjPvtKey(privateKey1, accounts[0].address)
     const tokenID = 1;
     const babyjub = w1.publicKeyCompressed;
-    const loadAmount = float40.round(ethers.utils.parseUnits("100", 18));
+    // const loadAmount = float40.round(ethers.utils.parseUnits("10", 18));
     // const l1TxUserArray = []
     // console.log(await zkPayment.lastForgedBatch())
-
+    const amountF = float40.fix2Float(ethers.utils.parseUnits("5", 18));
     // l1TxUserArray.push(
-    await l1UserTxDeposit(
-        loadAmount,
+    await l1UserTxForceExit(
         tokenID,
         32,
+        amountF,
         accounts[0],
-        zkPayment,
-        erc20Mock
+        zkPayment
     )
     // )
 }

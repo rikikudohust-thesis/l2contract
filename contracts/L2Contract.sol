@@ -5,6 +5,7 @@ pragma solidity ^0.8.0;
 import "./libs/Helpers.sol";
 import "./interfaces/VerifierRollupInterface.sol";
 import "./interfaces/VerifierWithdrawInterface.sol";
+import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -31,8 +32,8 @@ contract ZkPayment is Helpers {
     // bytes4(keccak256(bytes("permit(address,address,uint256,uint256,uint8,bytes32,bytes32)")));
     bytes4 constant _PERMIT_SIGNATURE = 0xd505accf;
 
-    // First 256 indexes reserved, first user index will be the 256
-    uint48 constant _RESERVED_IDX = 255;
+    // First 32 indexes reserved, first user index will be the 32
+    uint48 constant _RESERVED_IDX = 31;
 
     // IDX 1 is reserved for exits
     uint48 constant _EXIT_IDX = 1;
@@ -60,10 +61,10 @@ contract ZkPayment is Helpers {
     // And the maximum User TX is _MAX_L1_USER_TX
 
     // Maximum L1-user transactions allowed to be queued in a batch
-    uint256 constant _MAX_L1_USER_TX = 5;
+    uint256 constant _MAX_L1_USER_TX = 4;
 
     // Maximum L1 transactions allowed to be queued in a batch
-    uint256 constant _MAX_L1_TX = 10;
+    uint256 constant _MAX_L1_TX = 8;
 
     // Modulus zkSNARK
     uint256 constant _RFIELD =
@@ -73,7 +74,7 @@ contract ZkPayment is Helpers {
     // [_MAX_L1_TX * _L1_USER_TOTALBYTES bytes] l1TxsData + totall1L2TxsDataLength + feeIdxCoordinatorLength + [2 bytes] chainID + [4 bytes] batchNum =
     // 18546 bytes + totall1L2TxsDataLength + feeIdxCoordinatorLength
 
-    uint256 constant _INPUT_SHA_CONSTANT_BYTES = 894;
+    uint256 constant _INPUT_SHA_CONSTANT_BYTES = 738;
 
     uint8 public constant ABSOLUTE_MAX_L1L2BATCHTIMEOUT = 240;
 
@@ -138,6 +139,9 @@ contract ZkPayment is Helpers {
     address public tokenHEZ;
 
     address public zkPaymentGovernanceAddress;
+
+    bytes public test;
+    uint256 public hashData;
 
     // Event emitted when a L1-user transaction is called and added to the nextL1FillingQueue queue
     event L1UserTxEvent(
@@ -263,12 +267,12 @@ contract ZkPayment is Helpers {
             "zkPayment::forgeBatch: INTENAL_TX_NOT_ALLOWED"
         );
 
-        if (!l1Batch) {
-            require(
-                block.number < (lastL1L2Batch + forgeL1L2BatchTimeout), // No overflow since forgeL1L2BatchTimeout is an uint8
-                "zkPayment::forgeBatch: L1L2BATCH_REQUIRED"
-            );
-        }
+        // if (!l1Batch) {
+        //     require(
+        //         block.number < (lastL1L2Batch + forgeL1L2BatchTimeout), // No overflow since forgeL1L2BatchTimeout is an uint8
+        //         "zkPayment::forgeBatch: L1L2BATCH_REQUIRED"
+        //     );
+        // }
 
         // calculate input
         uint256 input = _constructCircuitInput(
@@ -278,6 +282,7 @@ contract ZkPayment is Helpers {
             l1Batch,
             verifierIdx
         );
+        // hashData = input;
 
         // verify proof
         require(
@@ -526,6 +531,7 @@ contract ZkPayment is Helpers {
 
         // set nullifier
         exitNullifierMap[numExitRoot][idx] = true;
+        IERC20(tokenList[tokenID]).transfer(msg.sender, amount);
 
         emit WithdrawEvent(idx, numExitRoot, instantWithdraw);
     }
@@ -576,8 +582,12 @@ contract ZkPayment is Helpers {
         // set nullifier
         exitNullifierMap[numExitRoot][idx] = true;
 
+        IERC20(tokenList[tokenID]).transfer(msg.sender, amount);
+
         emit WithdrawEvent(idx, numExitRoot, instantWithdraw);
     }
+
+
 
     //////////////
     // Governance methods
@@ -860,15 +870,14 @@ contract ZkPayment is Helpers {
         // l1L2TxsData = l2Bytes * maxTx =
         // ([(nLevels / 8) bytes] fromIdx + [(nLevels / 8) bytes] toIdx + [5 bytes] amountFloat40 + [1 bytes] fee) * maxTx =
         // ((nLevels / 4) bytes + 3 bytes) * maxTx
-        uint256 l1L2TxsDataLength = ((rollupVerifiers[verifierIdx].nLevels /
-            8) *
+        uint256 l1L2TxsDataLength = ((rollupVerifiers[verifierIdx].nLevels / 8)*
             2 +
             5 +
             1) * rollupVerifiers[verifierIdx].maxTx;
 
         // [(nLevels / 8) bytes]
-        uint256 feeIdxCoordinatorLength = (rollupVerifiers[verifierIdx]
-            .nLevels / 8) * 64;
+        uint256 feeIdxCoordinatorLength = (rollupVerifiers[verifierIdx].nLevels /
+      8) * 4;
 
         // the concatenation of all arguments could be done with abi.encodePacked(args), but is suboptimal, especially with a large bytes arrays
         // [6 bytes] lastIdx +
@@ -886,11 +895,13 @@ contract ZkPayment is Helpers {
 
         uint256 ptr; // Position for writing the bufftr
 
+        uint256 len;
         assembly {
             let inputBytesLength := add(
                 add(_INPUT_SHA_CONSTANT_BYTES, l1L2TxsDataLength),
                 feeIdxCoordinatorLength
             )
+            len := inputBytesLength
 
             // Set inputBytes to the next free memory space
             inputBytes := mload(0x40)
@@ -954,7 +965,7 @@ contract ZkPayment is Helpers {
 
         // store 2 bytes of chainID at the end of the inputBytes
         assembly {
-            mstore(ptr, shl(240, chainid())) // 256 - 16 = 240
+            mstore(ptr, shl(240, 1)) // 256 - 16 = 240
         }
         ptr += 2;
 
@@ -964,7 +975,7 @@ contract ZkPayment is Helpers {
         assembly {
             mstore(ptr, shl(224, batchNum)) // 256 - 32 = 224
         }
-
+        
         return uint256(sha256(inputBytes)) % _RFIELD;
     }
 
@@ -983,10 +994,53 @@ contract ZkPayment is Helpers {
         return l1UserTxsLen;
     }
 
-    /**
-     * @dev Withdraw the funds to the msg.sender if instant withdraw or to the withdraw delayer if delayed
-     * @param amount Amount to retrieve
-     * @param tokenID Token identifier
-     * @param instantWithdraw true if is an instant withdraw
-     */
+    function forgeBatchAllow(
+        uint48 newLastIdx,
+        uint256 newStRoot,
+        uint256 newExitRoot,
+        bytes calldata encodedL1CoordinatorTx,
+        bytes calldata l1L2TxsData,
+        bytes calldata feeIdxCoordinator,
+        uint8 verifierIdx,
+        bool l1Batch,
+        uint256[2] calldata proofA,
+        uint256[2][2] calldata proofB,
+        uint256[2] calldata proofC
+    ) external view returns(bool) {
+        // Assure data availability from regular ethereum nodes
+        // We include this line because it's easier to track the transaction data, as it will never be in an internal TX.
+        // In general this makes no sense, as callling this function from another smart contract will have to pay the calldata twice.
+        // But forcing, it avoids having to check.
+        require(
+            msg.sender == tx.origin,
+            "zkPayment::forgeBatch: INTENAL_TX_NOT_ALLOWED"
+        );
+
+        if (!l1Batch) {
+            require(
+                block.number < (lastL1L2Batch + forgeL1L2BatchTimeout), // No overflow since forgeL1L2BatchTimeout is an uint8
+                "zkPayment::forgeBatch: L1L2BATCH_REQUIRED"
+            );
+        }
+
+        // calculate input
+        uint256 input = _constructCircuitInput(
+            newLastIdx,
+            newStRoot,
+            newExitRoot,
+            l1Batch,
+            verifierIdx
+        );
+        // verify proof
+        require(
+            rollupVerifiers[verifierIdx].verifierInterface.verifyProof(
+                proofA,
+                proofB,
+                proofC,
+                [input]
+            ),
+            "zkPayment::forgeBatch: INVALID_PROOF"
+        );
+    }
 }
+

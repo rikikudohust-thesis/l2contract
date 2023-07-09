@@ -1,14 +1,14 @@
-const { expect } = require("chai");
-const { ethers } = require("hardhat");
-const Scalar = require("ffjavascript").Scalar;
-const axios = require("axios");
-const fs = require("fs");
-const path = require("path");
+const { expect } = require('chai');
+const { ethers } = require('hardhat');
+const Scalar = require('ffjavascript').Scalar;
+const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
 
-const { float40, txUtils, utils } = require("@hermeznetwork/commonjs");
-const { BigNumber } = require("ethers");
+const { float40, txUtils, utils } = require('@hermeznetwork/commonjs');
+const { BigNumber } = require('ethers');
 const nLevels = 32;
-const { stringifyBigInts, unstringifyBigInts } = require("ffjavascript").utils;
+const { stringifyBigInts, unstringifyBigInts } = require('ffjavascript').utils;
 
 const L1_USER_BYTES = 78; // 20 ehtaddr, 32 babyjub, 4 token, 2 amountF, 2 loadAmountf, 6 fromIDx, 6 toidx
 
@@ -18,15 +18,13 @@ const loadAmountF0 = 0;
 const amountF0 = 0;
 const tokenID0 = 0;
 const toIdx0 = 0;
-const emptyPermit = "0x";
-let ABIbid = [
-  "function permit(address,address,uint256,uint256,uint8,bytes32,bytes32)",
-];
+const emptyPermit = '0x';
+let ABIbid = ['function permit(address,address,uint256,uint256,uint8,bytes32,bytes32)'];
 
 let iface = new ethers.utils.Interface(ABIbid);
 
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 class Forger {
@@ -39,16 +37,12 @@ class Forger {
     this.verifier = verifier;
 
     this.l1TxB = 544;
-    }
+  }
 
   async forgeBatch(l1Batch, l1TxUserArray, l1TxCoordinatorArray, l2TxArray, log) {
-    const bb = await this.rollupDB.buildBatch(
-      this.maxTx,
-      this.nLevels,
-      this.maxL1Tx
-    );
+    const bb = await this.rollupDB.buildBatch(this.maxTx, this.nLevels, this.maxL1Tx);
 
-    let jsL1TxData = ""
+    let jsL1TxData = '';
     for (let tx of l1TxUserArray) {
       bb.addTx(txUtils.decodeL1TxFull(tx));
       jsL1TxData = jsL1TxData + tx.slice(2);
@@ -71,7 +65,7 @@ class Forger {
     }
 
     await bb.build();
-    // const data = await bb.getInput() 
+    // const data = await bb.getInput()
     // fs.writeFile('input.json', JSON.stringify(data), (err) => {
     //   console.error(err)
     // })
@@ -82,21 +76,12 @@ class Forger {
 async function calculateInputMaxTxLevels(maxTxArray, nLevelsArray) {
   let returnArray = [];
   for (let i = 0; i < maxTxArray.length; i++) {
-    returnArray.push(
-      Scalar.add(Scalar.e(maxTxArray[i]), Scalar.shl(nLevelsArray[i], 256 - 8))
-    );
+    returnArray.push(Scalar.add(Scalar.e(maxTxArray[i]), Scalar.shl(nLevelsArray[i], 256 - 8)));
   }
   return returnArray;
 }
 
-async function l1TxCreateAccountDeposit(
-  loadAmount,
-  tokenID,
-  babyjub,
-  wallet,
-  zkpayment,
-  token
-) {
+async function l1TxCreateAccountDeposit(loadAmount, tokenID, babyjub, wallet, zkpayment, token) {
   const loadAmountF = float40.fix2Float(loadAmount);
   const l1Tx = {
     toIdx: 0,
@@ -106,8 +91,8 @@ async function l1TxCreateAccountDeposit(
     fromIdx: 0,
     fromBjjCompressed: babyjub,
     fromEtherAddr: wallet.address,
-  }
-  const l1Txbytes = `0x${txUtils.encodeL1TxFull(l1Tx)}`
+  };
+  const l1Txbytes = `0x${txUtils.encodeL1TxFull(l1Tx)}`;
   const lastQueue = await zkpayment.nextL1FillingQueue();
   const lastQueueBytes = await zkpayment.mapL1TxQueue(lastQueue);
   const currentIndex = (lastQueueBytes.length - 2) / 2 / L1_USER_BYTES;
@@ -116,20 +101,77 @@ async function l1TxCreateAccountDeposit(
     await tx.wait();
   }
 
-  var tx = await zkpayment.connect(wallet).addL1Transaction(
-    babyjub,
-    fromIdx0,
-    loadAmountF,
-    amountF0,
-    tokenID,
-    toIdx0
-  )
+  var tx = await zkpayment.connect(wallet).addL1Transaction(babyjub, fromIdx0, loadAmountF, amountF0, tokenID, toIdx0);
   await tx.wait();
   return l1Txbytes;
+}
+
+async function l1UserTxDeposit(loadAmount, tokenID, fromIdx, wallet, zkpayment, hardhatTokenHermez) {
+  const loadAmountF = float40.fix2Float(loadAmount);
+
+  // equivalent L1 transaction:
+  const l1TxDeposit = {
+    toIdx: 0,
+    tokenID: tokenID,
+    amountF: 0,
+    loadAmountF: loadAmountF,
+    fromIdx: fromIdx,
+    fromBjjCompressed: '0',
+    fromEthAddr: await wallet.getAddress(),
+  };
+
+  const l1Txbytes = `0x${txUtils.encodeL1TxFull(l1TxDeposit)}`;
+
+  const lastQueue = await zkpayment.nextL1FillingQueue();
+
+  const lastQueueBytes = await zkpayment.mapL1TxQueue(lastQueue);
+
+  const currentIndex = (lastQueueBytes.length - 2) / 2 / L1_USER_BYTES; // -2 --> 0x, /2 --> 2 hex digits = 1 byte
+
+  if (tokenID != 0) {
+    // tokens ERC20
+    const initialOwnerBalance = await hardhatTokenHermez.balanceOf(await wallet.getAddress());
+    var tx = await hardhatTokenHermez.connect(wallet).approve(zkpayment.address, loadAmount);
+
+    await tx.wait();
+
+    var deposit_tx = await zkpayment
+      .connect(wallet)
+      .addL1Transaction(babyjub0, fromIdx, loadAmountF, amountF0, tokenID, toIdx0);
+    await deposit_tx.wait();
+  }
+
+  return l1Txbytes;
+}
+
+async function l1UserTxForceExit(tokenID, fromIdx, amountF, wallet, hardhatHermez) {
+  const exitIdx = 1;
+  // equivalent L1 transaction:
+  const l1TxForceExit = {
+    toIdx: exitIdx,
+    tokenID: tokenID,
+    amountF: amountF,
+    loadAmountF: 0,
+    fromIdx: fromIdx,
+    fromBjjCompressed: 0,
+    fromEthAddr: await wallet.getAddress(),
+  };
+  // const l1Txbytes = `0x${txUtils.encodeL1TxFull(l1TxForceExit)}`;
+
+  // const lastQueue = await hardhatHermez.nextL1FillingQueue();
+
+  // const lastQueueBytes = await hardhatHermez.mapL1TxQueue(lastQueue);
+
+  // const currentIndex = (lastQueueBytes.length - 2) / 2 / L1_USER_BYTES; // -2 --> 0x, /2 --> 2 hex digits = 1 byte
+
+  hardhatHermez.connect(wallet).addL1Transaction(babyjub0, fromIdx, loadAmountF0, amountF, tokenID, exitIdx);
+
 }
 
 module.exports = {
   calculateInputMaxTxLevels,
   Forger,
-  l1TxCreateAccountDeposit
+  l1TxCreateAccountDeposit,
+  l1UserTxDeposit,
+  l1UserTxForceExit
 };

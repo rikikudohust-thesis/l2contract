@@ -88,6 +88,13 @@ module.exports = {
       accounts,
       loggingEnabled: true,
       url: `https://sepolia.infura.io/v3/a37606efd3c5413dbae3f6736108e0ba`
+    },
+    arbitrum: {
+      tags: ['local', 'staging'],
+      live: true,
+      accounts,
+      loggingEnabled: true,
+      url: `https://arbitrum-goerli.blockpi.network/v1/rpc/public`
     }
   },
   mocha: {

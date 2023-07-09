@@ -20,7 +20,7 @@ describe("L2 Contract", function () {
         accounts = data.accounts;
         zkPayment = data.zkPayment;
         erc20Mock = data.erc20Mock;
-        const privateKey1 = Buffer.from("0001020304050607080900010203040506070809000102030405060708090001", "hex")
+        const privateKey1 = Buffer.from("0000000000000000000000000000000000000000000000000000000000000001", "hex")
         const privateKey2 = Buffer.from("0002020304050607080900010203040506070809000102030405060708090001", "hex")
         w1 = await createWalletFromBjjPvtKey(privateKey1, accounts[0].address)
         w2 = await createWalletFromBjjPvtKey(privateKey2, accounts[1].address)
@@ -38,6 +38,7 @@ describe("L2 Contract", function () {
             this.timeout(0)
             const tokenID = 1;
             const babyjub = w1.publicKeyCompressed;
+            console.log(`babyjub: ${babyjub}`)
             const loadAmount = float40.round(1000);
             const l1TxUserArray = []
 
