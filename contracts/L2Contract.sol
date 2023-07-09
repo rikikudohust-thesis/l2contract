@@ -524,6 +524,7 @@ contract ZkPayment is Helpers {
             "zkPayment::withdrawMerkleProof: WITHDRAW_ALREADY_DONE"
         );
         // check sparse merkle tree proof
+        console.log(stateHash);
         require(
             _smtVerifier(exitRoot, siblings, idx, stateHash) == true,
             "zkPayment::withdrawMerkleProof: SMT_PROOF_INVALID"
