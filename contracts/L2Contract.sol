@@ -5,7 +5,6 @@ pragma solidity ^0.8.0;
 import "./libs/Helpers.sol";
 import "./interfaces/VerifierRollupInterface.sol";
 import "./interfaces/VerifierWithdrawInterface.sol";
-import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
@@ -466,6 +465,9 @@ contract ZkPayment is Helpers {
                 "zkPayment::_addL1Transaction: BABYJUB_MUST_BE_0_IF_NOT_CREATE_ACCOUNT"
             );
         }
+        if (block.number < (lastL1L2Batch + forgeL1L2BatchTimeout)) {
+            nextL1FillingQueue++;
+        }
 
         _l1QueueAddTx(
             ethAddress,
@@ -524,7 +526,7 @@ contract ZkPayment is Helpers {
             "zkPayment::withdrawMerkleProof: WITHDRAW_ALREADY_DONE"
         );
         // check sparse merkle tree proof
-        console.log(stateHash);
+
         require(
             _smtVerifier(exitRoot, siblings, idx, stateHash) == true,
             "zkPayment::withdrawMerkleProof: SMT_PROOF_INVALID"

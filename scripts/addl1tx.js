@@ -8,7 +8,7 @@ async function main() {
     accounts = await ethers.getSigners();
     const erc20MockAddress = "0x113409aD74eb1fA56E90408a57e5d759D5a13381";
     const erc20Mock = await ethers.getContractAt("MockToken", erc20MockAddress);
-    const zkPaymentAddress = "0xedbCf0b7b5755707E410B46fFE33dC84742bFe0B"
+    const zkPaymentAddress = "0xb6C9f0CE324d7CF88E570CD1870796c6D85714dA"
     const zkPayment = await ethers.getContractAt("ZkPayment", zkPaymentAddress);
 
     const maxTx = 344;
@@ -20,7 +20,7 @@ async function main() {
     const w1 = await createWalletFromBjjPvtKey(privateKey1, accounts[0].address)
     const tokenID = 1;
     const babyjub = w1.publicKeyCompressed;
-    const loadAmount = float40.round(ethers.utils.parseUnits("100", 18));
+    const loadAmount = float40.round(ethers.utils.parseUnits("1000", 18));
     // const l1TxUserArray = []
     // console.log(await zkPayment.lastForgedBatch())
 
@@ -28,8 +28,8 @@ async function main() {
     await l1UserTxDeposit(
         loadAmount,
         tokenID,
-        32,
-        accounts[0],
+        33,
+        accounts[1],
         zkPayment,
         erc20Mock
     )

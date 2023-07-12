@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 import '@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol';
-import 'hardhat/console.sol';
 
 /**
  * @dev Interface poseidon hash function 2 elements
@@ -139,12 +138,11 @@ contract Helpers is Initializable {
 
     uint256 nextHash = _hashFinalNode(key, value);
     uint256 siblingTmp;
-      for (int i = int(siblings.length) - 1; i >= 0; i--) {
-        // console.log(i);
-        siblingTmp = siblings[uint256(i)];
-        bool leftRight = (uint8(key >> uint256(i)) & 0x01) == 1;
-        nextHash = leftRight ? _hashNode(siblingTmp, nextHash) : _hashNode(nextHash, siblingTmp);
-      }
+    for (int i = int(siblings.length) - 1; i >= 0; i--) {
+      siblingTmp = siblings[uint256(i)];
+      bool leftRight = (uint8(key >> uint256(i)) & 0x01) == 1;
+      nextHash = leftRight ? _hashNode(siblingTmp, nextHash) : _hashNode(nextHash, siblingTmp);
+    }
     // Step 3: Check root
     return root == nextHash;
   }

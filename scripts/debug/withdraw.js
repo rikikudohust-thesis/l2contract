@@ -1,11 +1,11 @@
 const { ethers, upgrades, network } = require('hardhat');
 const { poseidonContract } = require('circomlibjs');
-const { l1TxCreateAccountDeposit, l1UserTxDeposit } = require('../helpers/helpers')
+const { l1TxCreateAccountDeposit, l1UserTxDeposit } = require('../helpers/helpers');
 // const poseidonContract = require("circomlib/src/poseidon_gencontract");
 const { calculateInputMaxTxLevels } = require('../helpers/helpers');
 const { contracts } = require('../config/config');
 const { generateAccount } = require('../utils/generateWallet.js');
-const { float40, RollupDB, SMTTmpDb } = require('@hermeznetwork/commonjs')
+const { float40, RollupDB, SMTTmpDb } = require('@hermeznetwork/commonjs');
 
 async function getPoseidon(account) {
   let networkID = 1;
@@ -159,26 +159,26 @@ const main = async () => {
   var addTokenTx = await zkPayment.addToken(erc20Mock);
   await addTokenTx.wait();
   console.log('add token success');
-  const tokenID = 1
-  const amount = ethers.utils.parseUnits("5", 18);
-  const siblings = [0, 0, 0, 0, 0, 0, 0, 0, 0]
-  const babyjub = "0x20ad8a9be9c56d29b2cc80d0622e1c365217571b0df47e9c2619cfc4c7a6d6d6"
-  const arrayState = await zkPayment.buildTreeState(tokenID, 0, amount, babyjub, "0x693C4171D99ba75E877f536e1c830D76EF1fd4AF")
-  console.log(`arrayState: ${arrayState}`)
-  const stateHash = await zkPayment.hash4Elements(arrayState)
-  console.log(`stateHash:${stateHash}`)
-//   const hashFinal = await zkPayment.hashFinalNode(32, stateHash);
-//   console.log(`hashFinal: ${hashFinal}`)
-//   const root = await zkPayment.calculateRoot(siblings, 32, stateHash)
-//   console.log(`root: ${root}`)
-  await zkPayment.withdrawMerkleProof(tokenID, amount, babyjub, 8, siblings, 32, false);
+  const tokenID = 1;
+  const amount = ethers.utils.parseUnits('300', 18);
+  const siblings = ['0', '11542992933480913828002139471891817840143373180252903071389388558387315077692', '0', '0'];
+  const babyjub = '66016679714640164429795023399046266159149544164935229259162469848630372483994';
+  // const arrayState = await zkPayment.buildTreeState(tokenID, 0, amount, babyjub, "0x693C4171D99ba75E877f536e1c830D76EF1fd4AF")
+  // console.log(`arrayState: ${arrayState}`)
+  // const stateHash = await zkPayment.hash4Elements(arrayState)
+  // console.log(`stateHash:${stateHash}`)
+  //   const hashFinal = await zkPayment.hashFinalNode(32, stateHash);
+  //   console.log(`hashFinal: ${hashFinal}`)
+  //   const root = await zkPayment.calculateRoot(siblings, 32, stateHash)
+  //   console.log(`root: ${root}`)
+  console.log(accounts[3].address);
+  await zkPayment.connect(accounts[1]).withdrawMerkleProof(tokenID, amount, babyjub, 9, siblings, 33, false);
 
   return {
     zkPayment,
     erc20Mock,
     accounts,
   };
-
 };
 
 require.main === module &&

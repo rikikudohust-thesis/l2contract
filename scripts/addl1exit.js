@@ -8,7 +8,7 @@ async function main() {
     accounts = await ethers.getSigners();
     const erc20MockAddress = "0x113409aD74eb1fA56E90408a57e5d759D5a13381";
     const erc20Mock = await ethers.getContractAt("MockToken", erc20MockAddress);
-    const zkPaymentAddress = "0xedbCf0b7b5755707E410B46fFE33dC84742bFe0B"
+    const zkPaymentAddress = "0xb6C9f0CE324d7CF88E570CD1870796c6D85714dA"
     const zkPayment = await ethers.getContractAt("ZkPayment", zkPaymentAddress);
 
     const maxTx = 344;
@@ -23,13 +23,13 @@ async function main() {
     // const loadAmount = float40.round(ethers.utils.parseUnits("10", 18));
     // const l1TxUserArray = []
     // console.log(await zkPayment.lastForgedBatch())
-    const amountF = float40.fix2Float(ethers.utils.parseUnits("5", 18));
+    const amountF = float40.fix2Float(ethers.utils.parseUnits("100", 18));
     // l1TxUserArray.push(
     await l1UserTxForceExit(
         tokenID,
-        32,
+        35,
         amountF,
-        accounts[0],
+        accounts[3],
         zkPayment
     )
     // )
