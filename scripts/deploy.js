@@ -1,11 +1,11 @@
 const { ethers, upgrades, network } = require('hardhat');
 const { poseidonContract } = require('circomlibjs');
-const { l1TxCreateAccountDeposit, l1UserTxDeposit } = require('./helpers/helpers')
+const { l1TxCreateAccountDeposit, l1UserTxDeposit } = require('./helpers/helpers');
 // const poseidonContract = require("circomlib/src/poseidon_gencontract");
 const { calculateInputMaxTxLevels } = require('./helpers/helpers');
 const { contracts } = require('./config/config');
 const { generateAccount } = require('./utils/generateWallet.js');
-const { float40, RollupDB, SMTTmpDb } = require('@hermeznetwork/commonjs')
+const { float40, RollupDB, SMTTmpDb } = require('@hermeznetwork/commonjs');
 
 async function getPoseidon(account) {
   let networkID = 1;
@@ -81,7 +81,31 @@ async function getVerifierWithdraw() {
   return verifier;
 }
 
+async function getTokens(tokens) {
+  let networkID = 1;
+  if (network.name == 'hardhat') {
+    networkID = 2;
+  }
+  let result = [];
+  const totalsupply = ethers.utils.parseUnits('1000000000', 18);
+  for (let i = 0; i < tokens.length; i++) {
+    const tokenAddresses = contracts[networkID].tokens;
+    const token = tokenAddresses[tokens[i]];
+    if (token == '') {
+      const ERC20Mock = await ethers.getContractFactory('MockToken');
+      const erc20Mock = await ERC20Mock.deploy(tokens[i], tokens[i], totalsupply);
+      await erc20Mock.deployed();
+      result.push(erc20Mock.address)
+    } else {
+      result.push(token);
+    }
+  }
+
+  return result;
+}
+
 const main = async () => {
+  var supportToken = ['USDC', 'USDT', 'WBTC'];
   var accounts = await ethers.getSigners();
   const listPrv = [1, 2, 3, 4];
   const listAddress = accounts.map((a) => a.address).slice(0, listPrv.length);
@@ -92,12 +116,7 @@ const main = async () => {
   var deployer = accounts[0];
   var verifierParam = await calculateInputMaxTxLevels(maxTxVerifier, nLevelsVerifier);
   // Deploy erc20
-  const totalsupply = ethers.utils.parseUnits('1000000000', 18);
-  // const ERC20Mock = await ethers.getContractFactory('MockToken');
-  // const erc20MockInstance = await ERC20Mock.deploy('Mock', 'MCK', totalsupply);
-  // await erc20MockInstance.deployed();
-  // const erc20Mock = erc20MockInstance.address
-  const erc20Mock = getMockToken('0x113409aD74eb1fA56E90408a57e5d759D5a13381');
+  const tokens = await getTokens(supportToken);
 
   // Setup parameter
   const _forgeL1L2BatchTimeout = 10;
@@ -155,31 +174,32 @@ const main = async () => {
   console.log('UpdateForgeL1L2BatchTimeout Topic: ', zkPayment.interface.getEventTopic('UpdateForgeL1L2BatchTimeout'));
   console.log('UpdateFeeAddToken Topic: ', zkPayment.interface.getEventTopic('UpdateFeeAddToken'));
   console.log('AddToken Topic: ', zkPayment.interface.getEventTopic('AddToken'));
-
-  var addTokenTx = await zkPayment.addToken(erc20Mock);
-  await addTokenTx.wait();
-  console.log('add token success');
+  for (let i = 0; i < tokens.length; i++) {
+    console.log(`${supportToken[i]}: ${tokens[i]}`)
+    var addTokenTx = await zkPayment.addToken(tokens[i]);
+    await addTokenTx.wait();
+  }
 
   // const data = "0xeedfc30449647c407a98e6034a9d8eba2d9bac69d6d6a6c7c4cf19269c7ef40d1b571752361c2e62d080ccb2296dc5e99b8aad200000000000000000000000000000000000000001000000000000";
-  var addL1tx_0 = await zkPayment
-    .connect(accounts[0])
-    .addL1Transaction(`0x${wallets[0].publicKeyCompressedHex}`, 0, 0, 0, 1, 0);
-  await addL1tx_0.wait();
+  // var addL1tx_0 = await zkPayment
+  //   .connect(accounts[0])
+  //   .addL1Transaction(`0x${wallets[0].publicKeyCompressedHex}`, 0, 0, 0, 1, 0);
+  // await addL1tx_0.wait();
 
-  var addL1tx_1 = await zkPayment
-    .connect(accounts[1])
-    .addL1Transaction(`0x${wallets[1].publicKeyCompressedHex}`, 0, 0, 0, 1, 0);
-  await addL1tx_1.wait();
+  // var addL1tx_1 = await zkPayment
+  //   .connect(accounts[1])
+  //   .addL1Transaction(`0x${wallets[1].publicKeyCompressedHex}`, 0, 0, 0, 1, 0);
+  // await addL1tx_1.wait();
 
-  var addL1tx_2 = await zkPayment
-    .connect(accounts[2])
-    .addL1Transaction(`0x${wallets[2].publicKeyCompressedHex}`, 0, 0, 0, 1, 0);
-  await addL1tx_2.wait();
+  // var addL1tx_2 = await zkPayment
+  //   .connect(accounts[2])
+  //   .addL1Transaction(`0x${wallets[2].publicKeyCompressedHex}`, 0, 0, 0, 1, 0);
+  // await addL1tx_2.wait();
 
-  var addL1tx_3 = await zkPayment
-    .connect(accounts[3])
-    .addL1Transaction(`0x${wallets[3].publicKeyCompressedHex}`, 0, 0, 0, 1, 0);
-  await addL1tx_3.wait();
+  // var addL1tx_3 = await zkPayment
+  //   .connect(accounts[3])
+  //   .addL1Transaction(`0x${wallets[3].publicKeyCompressedHex}`, 0, 0, 0, 1, 0);
+  // await addL1tx_3.wait();
 
   console.log('add l1 tx success');
   // proofA: [
@@ -364,7 +384,6 @@ const main = async () => {
 
   return {
     zkPayment,
-    erc20Mock,
     accounts,
   };
 };

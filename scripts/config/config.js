@@ -14,6 +14,11 @@ const contracts = {
     poseidon4: '0xB74ed5b0DAF4d6E9E22538b0f2736FcB92e28B84',
     rollup_verifier: '0xe2ADD1db8327aD4d416Db5Aa9Ce267623D1f482c',
     withdraw_verifier: '0x27232Cf3e0D4f3881bbf4447B6Ec28C4F7036E26',
+    tokens: {
+      USDC: '0x1bc8779f8bC1764Eaf7105fD51597225A410cEB3',
+      USDT: '0x4421Fb4287CCB09433666AA96dF8B94d45B108A4',
+      WBTC: '0x5f7e872767Db9086E143e9503424878d874fccBb',
+    },
   },
   2: {
     zkPayment: '',
@@ -22,10 +27,15 @@ const contracts = {
     poseidon4: '',
     rollup_verifier: '',
     withdraw_verifier: '',
+    tokens: {
+      USDC: '',
+      USDT: '',
+      WBTC: '',
+    },
   },
   56: {},
 };
 
 module.exports = {
-  contracts
-}
+  contracts,
+};

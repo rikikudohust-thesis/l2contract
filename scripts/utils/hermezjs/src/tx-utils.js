@@ -381,7 +381,10 @@ function buildElement1(tx) {
   let res = Scalar.e(0);
 
   res = Scalar.add(res, Scalar.fromString(tx.toEthereumAddress || "0", 16)); // ethAddr --> 160 bits
+  
+  console.log(HermezCompressedAmount.compressAmount(tx.amount || 0).value)
   res = Scalar.add(res, Scalar.shl(HermezCompressedAmount.compressAmount(tx.amount || 0).value, 160)); // amountF --> 40 bits
+
   res = Scalar.add(res, Scalar.shl(tx.maxNumBatch || 0, 200)); // maxNumBatch --> 32 bits
 
   return res;

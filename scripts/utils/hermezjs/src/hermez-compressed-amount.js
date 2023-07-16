@@ -1,6 +1,6 @@
-const { Scalar } = require("ffjavascript");
+const { Scalar } = require('ffjavascript');
 
-const HERMEZ_COMPRESSES_AMOUNT_TYPE = "HermezCompressedAmount";
+const HERMEZ_COMPRESSES_AMOUNT_TYPE = 'HermezCompressedAmount';
 
 /** Class representing valid amounts in the Hermez network */
 class HermezCompressedAmount {
@@ -30,7 +30,7 @@ class HermezCompressedAmount {
   static decompressAmount(hermezCompressedAmount) {
     if (!HermezCompressedAmount.isHermezCompressedAmount(hermezCompressedAmount)) {
       throw new Error(
-        "The parameter needs to be an instance of HermezCompressedAmount created with HermezCompressedAmount.compressAmount"
+        'The parameter needs to be an instance of HermezCompressedAmount created with HermezCompressedAmount.compressAmount'
       );
     }
     const fl = hermezCompressedAmount.value;
@@ -67,11 +67,11 @@ class HermezCompressedAmount {
     }
 
     if (e > 31) {
-      throw new Error("number too big");
+      throw new Error('number too big');
     }
 
     if (!Scalar.isZero(Scalar.div(m, 0x800000000))) {
-      throw new Error("not enough precision");
+      throw new Error('not enough precision');
     }
 
     const res = Scalar.toNumber(m) + e * 0x800000000;
@@ -99,7 +99,7 @@ class HermezCompressedAmount {
     }
 
     if (e > 31) {
-      throw new Error("number too big");
+      throw new Error('number too big');
     }
 
     const res = Scalar.toNumber(m) + e * 0x800000000;
