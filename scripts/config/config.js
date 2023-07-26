@@ -33,7 +33,45 @@ const contracts = {
       WBTC: '',
     },
   },
-  56: {},
+  5: {
+    zkPayment: '',
+    poseidon2: '',
+    poseidon3: '',
+    poseidon4: '',
+    rollup_verifier: '',
+    withdraw_verifier: '',
+    tokens: {
+      USDC: '',
+      USDT: '',
+      WBTC: '',
+    },
+  },
+  421613: {
+    zkPayment: '0x052f3703F05a63Ca57FabCed387caB9659EBCC86',
+    poseidon2: '0x3A2aBbd97a437907AcB85DFB40a6D27D1C368636',
+    poseidon3: '0x8e5F16721d9089893e4c4358C1C68392659f0aaB',
+    poseidon4: '0x9f6D6f7C8b818E4Cd7bdCF9c7937A93A5a8c8a76',
+    rollup_verifier: '0x03144a1bb146138ee7310afCC4498A9875f7Ca94',
+    withdraw_verifier: '0x6be3F7f48a2d921aE63490F8C8abdadBED78a37C',
+    tokens: {
+      USDC: '0x229Ca9005ed3bbf8Dd29e8f11E4fF94252933037',
+      USDT: '0x17b6f8C5D1818b12f8960A1808aF62bf24f6B2f5',
+      WBTC: '0x7591Dc38F372c3d9D17170Bb11b5BaEa522a423b',
+    },
+  },
+  11155111: {
+    zkPayment: '',
+    poseidon2: '',
+    poseidon3: '',
+    poseidon4: '',
+    rollup_verifier: '',
+    withdraw_verifier: '',
+    tokens: {
+      USDC: '',
+      USDT: '',
+      WBTC: '',
+    },
+  },
 };
 
 module.exports = {
