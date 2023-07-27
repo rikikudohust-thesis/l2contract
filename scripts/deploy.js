@@ -152,7 +152,7 @@ const main = async () => {
   console.log(`rollup verifier: ${verifierRollup.address}`);
   console.log(`withdraw verifier: ${verifierWithdraw.address}`);
   console.log('zkpayment initialized');
-  if (contracts[chainID].tokens.USDC != '') return
+  if (contracts[chainID].zkPayment != '') return
   for (let i = 0; i < tokens.length; i++) {
     console.log(`${supportToken[i]}: ${tokens[i]}`)
     var addTokenTx = await zkPayment.addToken(tokens[i]);

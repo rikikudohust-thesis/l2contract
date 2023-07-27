@@ -465,7 +465,7 @@ contract ZkPayment is Helpers {
                 "zkPayment::_addL1Transaction: BABYJUB_MUST_BE_0_IF_NOT_CREATE_ACCOUNT"
             );
         }
-        if (block.number < (lastL1L2Batch + forgeL1L2BatchTimeout)) {
+        if (block.number > (lastL1L2Batch + forgeL1L2BatchTimeout)) {
             nextL1FillingQueue++;
         }
 
