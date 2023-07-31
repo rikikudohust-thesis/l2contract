@@ -43,7 +43,7 @@ async function getVerifierRollup(chainID) {
     await verifier.deployed();
     return verifier;
   } else {
-    const verifier = await ethers.getContractAt("VerifierRollup", verifierRollup)
+    const verifier = await ethers.getContractAt('VerifierRollup', verifierRollup);
     return verifier;
   }
 }
@@ -57,8 +57,8 @@ async function getVerifierWithdraw(chainID) {
     await withdrawVerifier.deployed();
     return withdrawVerifier;
   } else {
-    const withdrawVerifier = await ethers.getContractAt("VerifierWithdraw", verifier)
-    return withdrawVerifier
+    const withdrawVerifier = await ethers.getContractAt('VerifierWithdraw', verifier);
+    return withdrawVerifier;
   }
 }
 
@@ -73,7 +73,7 @@ async function getTokens(tokens, chainID) {
       const ERC20Mock = await ethers.getContractFactory('MockToken');
       const erc20Mock = await ERC20Mock.deploy(tokens[i], tokens[i], totalsupply);
       await erc20Mock.deployed();
-      result.push(erc20Mock.address)
+      result.push(erc20Mock.address);
     } else {
       result.push(token);
     }
@@ -85,10 +85,10 @@ async function getTokens(tokens, chainID) {
 async function getZKPayment(chainID, p2, p3, p4, verifierRollup, verifierWithdraw, verifierParam) {
   const zkpaymentAddress = contracts[chainID].zkPayment;
   const isNew = false;
-  let zkPayment;
+  // let zkPayment;
   if (zkpaymentAddress == '') {
     const ZKPAYMENT = await ethers.getContractFactory('ZkPayment');
-    zkPayment = await upgrades.deployProxy(ZKPAYMENT, [
+    const zkPayment = await upgrades.deployProxy(ZKPAYMENT, [
       [verifierRollup],
       [verifierParam.toString()],
       verifierWithdraw,
@@ -96,20 +96,20 @@ async function getZKPayment(chainID, p2, p3, p4, verifierRollup, verifierWithdra
       10,
       p2,
       p3,
-      p4
+      p4,
     ]);
-    await zkPayment.deployed()
+    await zkPayment.deployed();
     return zkPayment;
   }
-  zkPayment = await ethers.getContractAt("ZkPayment", zkpaymentAddress)
-  return zkPayment;
+  return await ethers.getContractAt('ZkPayment', zkpaymentAddress);
+
+  // return zkPayment;
 }
 
 const main = async () => {
-
   var chainID = network.config.chainId;
   if (network.name == 'hardhat') {
-    chainID = 2
+    chainID = 2;
   }
   var supportToken = ['USDC', 'USDT', 'WBTC'];
   var accounts = await ethers.getSigners();
@@ -144,21 +144,40 @@ const main = async () => {
   //   poseidon.poseidon4,
   // ]);
   // await zkPayment.deployed();
-  const zkPayment = await getZKPayment(chainID, poseidon.poseidon2, poseidon.poseidon3, poseidon.poseidon4, verifierRollup.address, verifierWithdraw.address, verifierParam);
+  const zkPayment = await getZKPayment(
+    chainID,
+    poseidon.poseidon2,
+    poseidon.poseidon3,
+    poseidon.poseidon4,
+    verifierRollup.address,
+    verifierWithdraw.address,
+    verifierParam
+  );
   console.log('zkPayment Address: ', zkPayment.address);
   console.log(`poseidon 2: ${poseidon.poseidon2}`);
   console.log(`poseidon 3: ${poseidon.poseidon3}`);
   console.log(`poseidon 4: ${poseidon.poseidon4}`);
   console.log(`rollup verifier: ${verifierRollup.address}`);
   console.log(`withdraw verifier: ${verifierWithdraw.address}`);
+  console.log('withdraw event: ', zkPayment.interface.getEventTopic('WithdrawEvent'));
   console.log('zkpayment initialized');
-  if (contracts[chainID].zkPayment != '') return
+  if (contracts[chainID].zkPayment != '') return;
   for (let i = 0; i < tokens.length; i++) {
-    console.log(`${supportToken[i]}: ${tokens[i]}`)
+    console.log(`${supportToken[i]}: ${tokens[i]}`);
     var addTokenTx = await zkPayment.addToken(tokens[i]);
     await addTokenTx.wait();
   }
   console.log('add l1 tx success');
+
+  await zkPayment.withdrawMerkleProof(
+    1,
+    ethers.utils.parseUnits('200', 18),
+    ' ',
+    13,
+    [],
+    32,
+    false
+  );
 
   return {
     zkPayment,
