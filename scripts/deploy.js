@@ -6,6 +6,7 @@ const { calculateInputMaxTxLevels } = require('./helpers/helpers');
 const { contracts } = require('./config/config');
 const { generateAccount } = require('./utils/generateWallet.js');
 const { float40, RollupDB, SMTTmpDb } = require('@hermeznetwork/commonjs');
+const { signCreateAccountAuthorization, signWithdraw } = require('./utils/signData');
 const _forgeL1L2BatchTimeout = 10;
 async function getPoseidon(account, chainID) {
   let networkID = chainID;
@@ -153,6 +154,7 @@ const main = async () => {
     verifierWithdraw.address,
     verifierParam
   );
+  await zkPayment.deployed();
   console.log('zkPayment Address: ', zkPayment.address);
   console.log(`poseidon 2: ${poseidon.poseidon2}`);
   console.log(`poseidon 3: ${poseidon.poseidon3}`);
@@ -169,15 +171,23 @@ const main = async () => {
   }
   console.log('add l1 tx success');
 
-  await zkPayment.withdrawMerkleProof(
-    1,
-    ethers.utils.parseUnits('200', 18),
-    ' ',
-    13,
-    [],
-    32,
-    false
-  );
+  // await zkPayment.withdrawMerkleProof(1, ethers.utils.parseUnits('200', 18), ' ', 13, [], 32, false);
+
+  //Sign data
+  // accounts[0]._signTypedData;
+  // const providerUrl = network.config.url;
+  // const signer = accounts[0];
+  // const bjj = `0x8bcde65e2937b60284cd4ad771dde597c0d3a867c27ff5ad08817460c845499e`;
+
+  // const DOMAIN_SEPARATOR = await zkPayment.DOMAIN_SEPARATOR();
+
+  // const signature = await signCreateAccountAuthorization(signer, bjj, zkPayment.address);
+  // var tx = await zkPayment.addL1Transaction(bjj, 0, 0, 0, 1, 0, signature);
+  // await tx.wait();
+
+  // const signature = await signWithdraw(signer, bjj, accounts[1].address, zkPayment.address);
+  // var tx = await zkPayment.connect(accounts[1]).withdrawMerkleProof(1, ethers.utils.parseEther('10'), bjj, 15, [], 0, false, signature);
+  // await tx.wait()
 
   return {
     zkPayment,
