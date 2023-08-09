@@ -185,22 +185,22 @@ const main = async () => {
       .approve(zkPayment.address, ethers.utils.parseEther('10000000000000'));
     await approveTx.wait();
   }
-  const signer = accounts[1];
-  const bjj = `0xade3679c0d0c04d3730bbdd037953ae147a041f24e7d1ed248d7bec7de5e3567`;
-  const amount = float40.fix2Float(ethers.utils.parseUnits('1000', 18));
+  // const signer = accounts[1];
+  // const bjj = `0xade3679c0d0c04d3730bbdd037953ae147a041f24e7d1ed248d7bec7de5e3567`;
+  // const amount = float40.fix2Float(ethers.utils.parseUnits('1000', 18));
 
-  // const DOMAIN_SEPARATOR = await zkPayment.DOMAIN_SEPARATOR();
-  console.log(accounts[1].address);
-  const wallet = new ethers.Wallet(
-    '0xc46c60e7d64a2fa6aa8417a06566d82906d80ac81b53e310c3742ce37974cca9',
-    signer.provider
-  );
-  const signature = await signTx(wallet, 1, accounts[0].address, zkPayment.address);
-  console.log(signature);
-  // var tx = await zkPayment.connect(accounts[0]).addL1Transaction(bjj, 0, amount, 0, 1, 0, "0x4dfbd6dc53ccbd596f4d00d0939e1c4f63629ca23a80085ac160f0bdc333364a5d8c82d99dbdb2aa50988e5c3be26afabc5781f0a553a079d6b9fc91659f4e901b");
-  var tx = await zkPayment.connect(accounts[0]).addL1Transaction(0, 32, 0, amount, 1, 1, signature);
+  // // const DOMAIN_SEPARATOR = await zkPayment.DOMAIN_SEPARATOR();
+  // console.log(accounts[1].address);
+  // const wallet = new ethers.Wallet(
+  //   '0xc46c60e7d64a2fa6aa8417a06566d82906d80ac81b53e310c3742ce37974cca9',
+  //   signer.provider
+  // );
+  // const signature = await signTx(wallet, 1, accounts[0].address, zkPayment.address);
+  // console.log(signature);
+  // // var tx = await zkPayment.connect(accounts[0]).addL1Transaction(bjj, 0, amount, 0, 1, 0, "0x4dfbd6dc53ccbd596f4d00d0939e1c4f63629ca23a80085ac160f0bdc333364a5d8c82d99dbdb2aa50988e5c3be26afabc5781f0a553a079d6b9fc91659f4e901b");
+  // var tx = await zkPayment.connect(accounts[0]).addL1Transaction(0, 32, 0, amount, 1, 1, signature);
 
-  await tx.wait();
+  // await tx.wait();
 
   // const signature = await signWithdraw(signer, bjj, accounts[1].address, zkPayment.address);
   // var tx = await zkPayment.connect(accounts[1]).withdrawMerkleProof(1, ethers.utils.parseEther('10'), bjj, 15, [], 0, false, signature);
