@@ -52,11 +52,15 @@ contract Helpers is Initializable {
 
   bytes32 public constant WITHDRAW_TYPEHASH =
     keccak256('Authorise(string Provider,string Authorisation,bytes32 BJJKey,address EthAddr)');
+
+  bytes32 public constant TX_TYPEHASH =
+    keccak256('Authorise(string Provider,string Authorisation,uint48 ToIdx,address EthAddr)');
   // bytes32 public constant ZKPAYMENT_NETWORK_HASH = keccak256(bytes("ZkPayment Network")),
   bytes32 public constant ZKPAYMENT_NETWORK_HASH = 0xbe287413178bfeddef8d9753ad4be825ae998706a6dabff23978b59dccaea0ad;
   // bytes32 public constant ACCOUNT_CREATION_HASH = keccak256(bytes("Account creation")),
   bytes32 public constant ACCOUNT_CREATION_HASH = 0xff946cf82975b1a2b6e6d28c9a76a4b8d7a1fd0592b785cb92771933310f9ee7;
   bytes32 public constant WITHDRAW_HASH = keccak256(bytes('Withdraw'));
+  bytes32 public constant TX_HASH = keccak256(bytes('Tx'));
 
   /**
    * @dev Load poseidon smart contract
@@ -261,6 +265,22 @@ contract Helpers is Initializable {
     );
 
     bytes32 encodeData = keccak256(abi.encode(WITHDRAW_TYPEHASH, NAME_HASH, WITHDRAW_HASH, babyjub, ethAddr));
+    bytes32 messageDigest = keccak256(abi.encodePacked('\x19\x01', DOMAIN_SEPARATOR(), encodeData));
+
+    address ethAddress = ecrecover(messageDigest, v, r, s);
+
+    require(ethAddress != address(0), 'ZkPaymentHelpers::_checkSig: INVALID_SIGNATURE');
+
+    return ethAddress;
+  }
+
+  function _checkSigTx(uint48 toIdx, address ethAddr, bytes32 r, bytes32 s, uint8 v) internal view returns (address) {
+    require(
+      uint256(s) <= 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0,
+      'ZkPaymentHelpers::_checkSig: INVALID_S_VALUE'
+    );
+
+    bytes32 encodeData = keccak256(abi.encode(TX_TYPEHASH, NAME_HASH, TX_HASH, toIdx, ethAddr));
     bytes32 messageDigest = keccak256(abi.encodePacked('\x19\x01', DOMAIN_SEPARATOR(), encodeData));
 
     address ethAddress = ecrecover(messageDigest, v, r, s);

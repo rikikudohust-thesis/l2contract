@@ -4,6 +4,7 @@ const EIP_712_PROVIDER = 'ZKPayment Network';
 const CREATE_ACCOUNT_AUTH_MESSAGE = 'Account creation';
 const WITHDRAW_MESSAGE = 'Withdraw';
 const EIP_712_VERSION = '1';
+const TX_MESSAGE = 'Tx';
 
 async function signCreateAccountAuthorization(signer, bJJ, address) {
   const chainId = 1;
@@ -27,9 +28,6 @@ async function signCreateAccountAuthorization(signer, bJJ, address) {
     BJJKey: bJJ,
   };
   const signature = await signer._signTypedData(domain, types, value);
-  console.log(
-    ethers.utils.keccak256(ethers.utils.toUtf8Bytes('Authorise(string Provider,string Authorisation,bytes32 BJJKey)'))
-  );
 
   return signature;
 }
@@ -58,8 +56,35 @@ async function signWithdraw(signer, bJJ, receiver, address) {
     EthAddr: receiver,
   };
   const signature = await signer._signTypedData(domain, types, value);
-  console.log(ethers.utils.keccak256(ethers.utils.toUtf8Bytes('Authorise(string Provider,string Authorisation,bytes32 BJJKey,address EthAddr)')));
+  // console.log(ethers.utils.keccak256(ethers.utils.toUtf8Bytes('Authorise(string Provider,string Authorisation,bytes32 BJJKey,address EthAddr)')));
+  console.log('here: ', await ethers.utils.verifyTypedData(domain, types, value, signature));
 
+  return signature;
+}
+async function signTx(signer, toIdx, receiver, address) {
+  const chainId = 1;
+
+  const domain = {
+    name: EIP_712_PROVIDER,
+    version: EIP_712_VERSION,
+    chainId,
+    verifyingContract: address,
+  };
+  const types = {
+    Authorise: [
+      { name: 'Provider', type: 'string' },
+      { name: 'Authorisation', type: 'string' },
+      { name: 'ToIdx', type: 'uint48' },
+      { name: 'EthAddr', type: 'address' },
+    ],
+  };
+  const value = {
+    Provider: EIP_712_PROVIDER,
+    Authorisation: TX_MESSAGE,
+    ToIdx: toIdx,
+    EthAddr: receiver,
+  };
+  const signature = await signer._signTypedData(domain, types, value);
   return signature;
 }
 
@@ -75,4 +100,5 @@ async function signWithdraw(signer, bJJ, receiver, address) {
 module.exports = {
   signCreateAccountAuthorization,
   signWithdraw,
+  signTx,
 };

@@ -5,7 +5,6 @@ pragma solidity ^0.8.0;
 import './libs/Helpers.sol';
 import './interfaces/VerifierRollupInterface.sol';
 import './interfaces/VerifierWithdrawInterface.sol';
-import 'hardhat/console.sol';
 
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
@@ -353,7 +352,12 @@ contract ZkPayment is Helpers {
       uint8 v = uint8(permit[64]);
       bytes32 r = _readBytes32(permit, 0);
       bytes32 s = _readBytes32(permit, 32);
-      address ethAddr = _checkSig(bytes32(babyPubKey), r, s, v);
+      address ethAddr;
+      if (fromIdx == 0) {
+        ethAddr = _checkSig(bytes32(babyPubKey), r, s, v);
+      } else {
+        ethAddr = _checkSigTx(toIdx, msg.sender, r, s, v);
+      }
       _addL1Transaction(ethAddr, babyPubKey, fromIdx, loadAmountF, amountF, tokenID, toIdx);
     }
   }
@@ -454,7 +458,6 @@ contract ZkPayment is Helpers {
       bytes32 r = _readBytes32(permit, 0);
       bytes32 s = _readBytes32(permit, 32);
       address ethAddr = _checkSigWithdraw(bytes32(babyPubKey), msg.sender, r, s, v);
-      console.log(ethAddr);
 
       uint256[4] memory arrayState = _buildTreeState(tokenID, 0, amount, babyPubKey, ethAddr);
       uint256 stateHash = _hash4Elements(arrayState);

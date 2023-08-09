@@ -6,7 +6,7 @@ async function main() {
   // Deploy L2 contract
   const ZKPAYMENT = await ethers.getContractFactory('ZkPayment');
   let zkPayment;
-  const zkPaymentUpgrades = await upgrades.upgradeProxy("0x7E6b170c6639B268a49FD383bdB93EE0A0E39620",ZKPAYMENT);
+  const zkPaymentUpgrades = await upgrades.upgradeProxy("0x927b63cC5138b3f5d26e434Bbe861D9D973E27d1",ZKPAYMENT);
   console.log("upgrades successfully")
 }
 
