@@ -47,7 +47,7 @@ const contracts = {
     },
   },
   421613: {
-    zkPayment: '',
+    zkPayment: '0x1037006511412008eA908bC267f768Cada5e7e09',
     poseidon2: '0x3A2aBbd97a437907AcB85DFB40a6D27D1C368636',
     poseidon3: '0x8e5F16721d9089893e4c4358C1C68392659f0aaB',
     poseidon4: '0x9f6D6f7C8b818E4Cd7bdCF9c7937A93A5a8c8a76',

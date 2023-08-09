@@ -178,13 +178,13 @@ const main = async () => {
   // accounts[0]._signTypedData;
   // const providerUrl = network.config.url;
 
-  for (let i = 0; i < tokens.length; i++) {
-    const token = await ethers.getContractAt('MockToken', tokens[i]);
-    var approveTx = await token
-      .connect(accounts[0])
-      .approve(zkPayment.address, ethers.utils.parseEther('10000000000000'));
-    await approveTx.wait();
-  }
+  // for (let i = 0; i < tokens.length; i++) {
+  //   const token = await ethers.getContractAt('MockToken', tokens[i]);
+  //   var approveTx = await token
+  //     .connect(accounts[0])
+  //     .approve(zkPayment.address, ethers.utils.parseEther('10000000000000'));
+  //   await approveTx.wait();
+  // }
   // const signer = accounts[1];
   // const bjj = `0xade3679c0d0c04d3730bbdd037953ae147a041f24e7d1ed248d7bec7de5e3567`;
   // const amount = float40.fix2Float(ethers.utils.parseUnits('1000', 18));
